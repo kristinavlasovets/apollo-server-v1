@@ -1,0 +1,31 @@
+import "dotenv/config.js";
+
+import { startStandaloneServer } from "@apollo/server/standalone";
+
+import { resolvers } from "../resolvers/index.js";
+import { typeDefs } from "../schema/index.js";
+
+import { ApolloServer, gql } from "apollo-server-express";
+import { ApolloServerPluginDrainHttpServer } from "apollo-server-core";
+import http from "http";
+import express from "express";
+import cors from "cors";
+
+const app = express();
+app.use(cors());
+app.use(express.json());
+const httpServer = http.createServer(app);
+
+const startApolloServer = async (app, httpServer) => {
+  const server = new ApolloServer({
+    typeDefs,
+    resolvers,
+    plugins: [ApolloServerPluginDrainHttpServer({ httpServer })],
+  });
+
+  await server.start();
+  server.applyMiddleware({ app });
+};
+startApolloServer(app, httpServer);
+
+export default httpServer;
